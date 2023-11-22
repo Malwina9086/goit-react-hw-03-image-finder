@@ -1,16 +1,92 @@
-export const App = () => {
-  return (
-    <div
-      style={{
-        height: '100vh',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        fontSize: 40,
-        color: '#010101'
-      }}
-    >
-      React homework template
-    </div>
-  );
-};
+import React, { Component } from 'react';
+import { Notify } from 'notiflix';
+
+import css from './App.module.css';
+import Button from './Button/Button';
+import ImageGallery from './ImageGallery/ImageGallery';
+import Loader from './Loader/Loader';
+import Modal from './Modal/Modal';
+import Searchbar from './Searchbar/Searchbar';
+import { fetchImages } from './Api';
+
+export class App extends Component {
+  state = {
+    images: [],
+    query: '',
+    page: 1,
+    isLoading: false,
+    showBtn: false,
+    showModal: false,
+    largeImageURL: '',
+  };
+
+  onSubmit = e => {
+    e.preventDefault();
+    const query = e.target.elements.search.value;
+
+    this.setState({
+      query,
+      isLoading: true,
+      images: [],
+    });
+
+    this.fetchGallery(query, this.state.page);
+  };
+
+  onNextPage = () => {
+    const { query, page } = this.state;
+
+    this.setState({
+      page: page + 1,
+      isLoading: true,
+    });
+
+    this.fetchGallery(query, page + 1);
+  };
+
+  onClickImage = url => {
+    this.setState({ showModal: true, largeImageURL: url });
+  };
+
+  onModalClose = () => {
+    this.setState({ showModal: false, largeImageURL: '' });
+  };
+
+  fetchGallery = async (query, page) => {
+    try {
+      const response = await fetchImages(query, page);
+
+      this.setState(prevState => ({
+        images: [...prevState.images, ...response],
+        showBtn: response.length === 12,
+      }));
+
+      if (response.length === 0) {
+        Notify.failure('No matches found!');
+      }
+    } catch (error) {
+      this.setState({ error });
+    } finally {
+      this.setState({ isLoading: false });
+    }
+  };
+
+  render() {
+    const { images, isLoading, showBtn, showModal, largeImageURL } = this.state;
+
+    return (
+      <div className={css.App}>
+        <Searchbar onSubmit={this.onSubmit} />
+        <ImageGallery images={images} onClickImage={this.onClickImage} />
+        {isLoading && <Loader />}
+        {showBtn && <Button onNextPage={this.onNextPage} />}
+        {showModal && (
+          <Modal
+            largeImageURL={largeImageURL}
+            onModalClose={this.onModalClose}
+          />
+        )}
+      </div>
+    );
+  }
+}
