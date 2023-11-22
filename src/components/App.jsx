@@ -2,11 +2,12 @@ import React, { Component } from 'react';
 import { Notify } from 'notiflix';
 
 import css from './App.module.css';
-import Button from './Button/Button';
+
+import { Searchbar } from './Searchbar/Searchbar';
 import ImageGallery from './ImageGallery/ImageGallery';
+import { Button } from './Button/Button';
 import Loader from './Loader/Loader';
 import Modal from './Modal/Modal';
-import Searchbar from './Searchbar/Searchbar';
 import { fetchImages } from './Api';
 
 export class App extends Component {
@@ -52,23 +53,24 @@ export class App extends Component {
     this.setState({ showModal: false, largeImageURL: '' });
   };
 
-  fetchGallery = async (query, page) => {
-    try {
-      const response = await fetchImages(query, page);
+  fetchGallery = (query, page) => {
+    fetchImages(query, page)
+      .then(response => {
+        this.setState(prevState => ({
+          images: [...prevState.images, ...response],
+          showBtn: response.length === 12,
+        }));
 
-      this.setState(prevState => ({
-        images: [...prevState.images, ...response],
-        showBtn: response.length === 12,
-      }));
-
-      if (response.length === 0) {
-        Notify.failure('No matches found!');
-      }
-    } catch (error) {
-      this.setState({ error });
-    } finally {
-      this.setState({ isLoading: false });
-    }
+        if (response.length === 0) {
+          Notify.failure('No matches found!');
+        }
+      })
+      .catch(error => {
+        this.setState({ error });
+      })
+      .finally(() => {
+        this.setState({ isLoading: false });
+      });
   };
 
   render() {

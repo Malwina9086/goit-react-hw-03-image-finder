@@ -1,4 +1,3 @@
-import React from 'react';
 import PropTypes from 'prop-types';
 import css from './ImageGalleryItem.module.css';
 
@@ -15,6 +14,7 @@ const ImageGalleryItem = ({
         className={css.ImageGalleryItemImg}
         src={webformatURL}
         alt={tags}
+        data-largeimage={largeImageURL}
       />
     </li>
   );
