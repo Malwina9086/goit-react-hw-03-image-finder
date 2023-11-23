@@ -27,6 +27,7 @@ export class App extends Component {
 
     this.setState({
       query,
+      page: 1, // numer strony: 1
       isLoading: true,
       images: [],
     });
