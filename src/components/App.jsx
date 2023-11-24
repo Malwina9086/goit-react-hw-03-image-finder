@@ -32,7 +32,7 @@ export class App extends Component {
       images: [],
     });
 
-    this.fetchGallery(query, this.state.page);
+    this.fetchGallery(query, 1); // updated
   };
 
   onNextPage = () => {
